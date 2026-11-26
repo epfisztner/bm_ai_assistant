@@ -1,0 +1,10 @@
+knowledge:
+  source-registry:
+    location: classpath:registry/test-registry.yaml
+  ingestion:
+    seed-on-startup: false
+    fetch-timeout: 5s
+    # every fetched page is recorded (SnapshotRecordingIT); SnapshotReplayIT uses its own context in replay mode
+    snapshots:
+      mode: record
+      directory: target/test-snapshots

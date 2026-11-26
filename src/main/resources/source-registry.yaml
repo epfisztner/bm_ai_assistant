@@ -1,0 +1,66 @@
+# Source Registry: the Sources the Knowledge Base is built from (ADR-0004).
+# Each entry: key (stable, never reused), url, optional title (overrides the page title),
+# productCategory (LAKASHITEL | SZEMELYI_KOLCSON | BANKSZAMLA), bank, bankProduct.
+#
+# Comparison and guide pages that cover several banks are recorded with bank "Több bank" and a
+# bankProduct naming what the page compares or explains.
+sources:
+  # --- bankszámla -------------------------------------------------------------------------
+  - key: bankszamla-ingyenes-bankszamlak
+    url: https://bankmonitor.hu/bankszamla/ingyenes-bankszamlak/
+    title: Ingyenes bankszámlák összehasonlítása
+    productCategory: BANKSZAMLA
+    bank: Több bank
+    bankProduct: Ingyenes bankszámlák összehasonlítása
+  - key: bankszamla-cib-eco
+    url: https://bankmonitor.hu/bankszamla/ingyenes-bankszamla-online/
+    title: CIB ECO ingyenes bankszámla
+    productCategory: BANKSZAMLA
+    bank: CIB Bank
+    bankProduct: CIB ECO
+  - key: bankszamla-cib-eco-plusz
+    url: https://bankmonitor.hu/bankszamla/cib-eco-plusz/
+    title: CIB ECO Plusz ingyenes bankszámla
+    productCategory: BANKSZAMLA
+    bank: CIB Bank
+    bankProduct: CIB ECO Plusz
+  - key: bankszamla-unicredit-partner-aktiv-nulla
+    url: https://bankmonitor.hu/bankszamla/ingyenes-bankszamla-nyitas/
+    title: UniCredit Partner Aktív Nulla ingyenes bankszámla
+    productCategory: BANKSZAMLA
+    bank: UniCredit Bank
+    bankProduct: UniCredit Partner Aktív Nulla
+  - key: bankszamla-erste-privilegium-partner
+    url: https://bankmonitor.hu/bankszamla/erste-ingyenes-bankszamla-nyitas/
+    title: Erste Privilégium 2.0 Partner ingyenes bankszámla
+    productCategory: BANKSZAMLA
+    bank: Erste Bank
+    bankProduct: Erste Privilégium 2.0 Partner
+
+  # --- lakáshitel -------------------------------------------------------------------------
+  - key: lakashitel-fogyasztobarat
+    url: https://bankmonitor.hu/fogyasztobarat-lakashitel/
+    title: Minősített Fogyasztóbarát Lakáshitelek
+    productCategory: LAKASHITEL
+    bank: Több bank
+    bankProduct: Minősített Fogyasztóbarát Lakáshitel
+  - key: lakashitel-mennyi-kaphatok
+    url: https://bankmonitor.hu/lakashitel-kalkulator/mennyi-lakashitelt-kaphatok/
+    title: Mennyi lakáshitelt kaphatok?
+    productCategory: LAKASHITEL
+    bank: Több bank
+    bankProduct: Lakáshitel összeg kalkulátor
+
+  # --- személyi kölcsön -------------------------------------------------------------------
+  - key: szemelyi-kolcson
+    url: https://bankmonitor.hu/szemelyi-kolcson/
+    title: Személyi kölcsön kalkulátor és feltételek
+    productCategory: SZEMELYI_KOLCSON
+    bank: Több bank
+    bankProduct: Személyi kölcsönök összehasonlítása
+  - key: szemelyi-kolcson-nagyosszegu
+    url: https://bankmonitor.hu/nagyosszegu-szemelyi-kolcson/
+    title: Nagyösszegű személyi kölcsön
+    productCategory: SZEMELYI_KOLCSON
+    bank: Több bank
+    bankProduct: Nagyösszegű személyi kölcsön

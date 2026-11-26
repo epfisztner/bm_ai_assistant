@@ -1,0 +1,144 @@
+# Test Source Registry: every Source points at the local fixture site (FixtureSite).
+# The fixture site is shared by the whole test JVM, so each test uses Sources with their own paths.
+sources:
+  - key: ingest-first-version
+    url: ${fixture-site.base-url}/ingestion/first-version/
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Próba Számla
+  - key: ingest-unreachable
+    url: ${fixture-site.base-url}/ingestion/unreachable/
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Elérhetetlen Számla
+  - key: extract-headings
+    url: ${fixture-site.base-url}/extraction/headings/
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Fejezetes Számla
+  - key: extract-boilerplate
+    url: ${fixture-site.base-url}/extraction/boilerplate/
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Zajos Számla
+  - key: extract-main-element
+    url: ${fixture-site.base-url}/extraction/main-element/
+    title: Főtartalmas Számla
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Főtartalmas Számla
+  - key: extract-oversized
+    url: ${fixture-site.base-url}/extraction/oversized/
+    productCategory: SZEMELYI_KOLCSON
+    bank: Próba Bank
+    bankProduct: Hosszú Kölcsön
+  - key: listing-lakashitel
+    url: ${fixture-site.base-url}/listing/lakashitel/
+    productCategory: LAKASHITEL
+    bank: Lista Bank
+    bankProduct: Lista Lakáshitel
+  - key: listing-bankszamla
+    url: ${fixture-site.base-url}/listing/bankszamla/
+    productCategory: BANKSZAMLA
+    bank: Lista Bank
+    bankProduct: Lista Számla
+  - key: extract-comparison-page
+    url: ${fixture-site.base-url}/extraction/comparison-page/
+    productCategory: BANKSZAMLA
+    bank: Több bank
+    bankProduct: Próba összehasonlítás
+  - key: extract-conditions
+    url: ${fixture-site.base-url}/extraction/conditions/
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Feltételes Számla
+  - key: extract-page-furniture
+    url: ${fixture-site.base-url}/extraction/page-furniture/
+    productCategory: BANKSZAMLA
+    bank: Próba Bank
+    bankProduct: Bútorzott Számla
+  - key: extract-streamed-content
+    url: ${fixture-site.base-url}/extraction/streamed-content/
+    productCategory: BANKSZAMLA
+    bank: Több bank
+    bankProduct: Próba számlaajánlatok
+  - key: answer-mokus-szamla
+    url: ${fixture-site.base-url}/answering/mokus-szamla/
+    productCategory: BANKSZAMLA
+    bank: Erdei Bank
+    bankProduct: Mókus Számla
+  - key: versions-szarka-szamla
+    url: ${fixture-site.base-url}/versions/szarka-szamla/
+    productCategory: BANKSZAMLA
+    bank: Liget Bank
+    bankProduct: Szarka Számla
+  - key: snapshot-recorded
+    url: ${fixture-site.base-url}/snapshots/recorded/
+    productCategory: BANKSZAMLA
+    bank: Liget Bank
+    bankProduct: Fénykép Számla
+  - key: verify-borz-kolcson
+    url: ${fixture-site.base-url}/verification/borz-kolcson/
+    productCategory: SZEMELYI_KOLCSON
+    bank: Patak Bank
+    bankProduct: Borz Kölcsön
+  - key: followup-hod-szamla
+    url: ${fixture-site.base-url}/follow-up/hod-szamla/
+    productCategory: BANKSZAMLA
+    bank: Hód Bank
+    bankProduct: Hód Számla
+  - key: followup-vidra-szamla
+    url: ${fixture-site.base-url}/follow-up/vidra-szamla/
+    productCategory: BANKSZAMLA
+    bank: Vidra Bank
+    bankProduct: Vidra Számla
+  - key: retrieval-csiripelo-szamla
+    url: ${fixture-site.base-url}/retrieval/csiripelo-szamla/
+    productCategory: BANKSZAMLA
+    bank: Fecske Bank
+    bankProduct: Csiripelő Számla
+  - key: filter-bagoly-lakashitel
+    url: ${fixture-site.base-url}/filtering/bagoly-lakashitel/
+    productCategory: LAKASHITEL
+    bank: Bagoly Bank
+    bankProduct: Bagoly Lakáshitel
+  - key: filter-bagoly-szamla
+    url: ${fixture-site.base-url}/filtering/bagoly-szamla/
+    productCategory: BANKSZAMLA
+    bank: Bagoly Bank
+    bankProduct: Bagoly Számla
+  - key: provider-horcsog-szamla
+    url: ${fixture-site.base-url}/providers/horcsog-szamla/
+    productCategory: BANKSZAMLA
+    bank: Hörcsög Bank
+    bankProduct: Hörcsög Számla
+  - key: audit-hermelin-szamla
+    url: ${fixture-site.base-url}/audit/hermelin-szamla/
+    productCategory: BANKSZAMLA
+    bank: Menyét Bank
+    bankProduct: Hermelin Számla
+  - key: offline-pele-szamla
+    url: ${fixture-site.base-url}/offline/pele-szamla/
+    productCategory: BANKSZAMLA
+    bank: Pele Bank
+    bankProduct: Pele Számla
+  - key: offline-nyest-eco
+    url: ${fixture-site.base-url}/offline/nyest-eco/
+    productCategory: BANKSZAMLA
+    bank: Nyest Bank
+    bankProduct: Nyest ECO
+  - key: offline-nyest-eco-plusz
+    url: ${fixture-site.base-url}/offline/nyest-eco-plusz/
+    productCategory: BANKSZAMLA
+    bank: Nyest Bank
+    bankProduct: Nyest ECO Plusz
+  - key: offline-vakond-plusz
+    url: ${fixture-site.base-url}/offline/vakond-plusz/
+    productCategory: BANKSZAMLA
+    bank: Vakond Bank
+    bankProduct: Vakond Plusz
+  - key: offline-sun-kolcson
+    url: ${fixture-site.base-url}/offline/sun-kolcson/
+    productCategory: SZEMELYI_KOLCSON
+    bank: Sün Bank
+    bankProduct: Sün Kölcsön

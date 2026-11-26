@@ -1,0 +1,11 @@
+.idea/
+*.iml
+.vscode/
+
+# Build output
+target/
+
+# Fetched Source snapshots for offline replay (ADR-0004); never committed
+snapshots/
+
+.DS_Store

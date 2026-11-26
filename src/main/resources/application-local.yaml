@@ -1,0 +1,34 @@
+# Local run outside Docker (IDE or `./mvnw spring-boot:run`) with the same defaults as the `app` service in
+# compose.yaml. Activate with the `local` profile:
+#   ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+#   IntelliJ: Active profiles = local   (or SPRING_PROFILES_ACTIVE=local)
+# Every value can still be overridden by the same environment variable as in compose.yaml.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/knowledge}
+    username: ${DB_USER:knowledge}
+    password: ${DB_PASSWORD:knowledge}
+
+knowledge:
+  ingestion:
+    seed-on-startup: ${SEED_ON_STARTUP:true}
+    schedule:
+      cron: ${INGESTION_CRON:-}
+    snapshots:
+      mode: ${SNAPSHOT_MODE:record}
+  chat:
+    provider: ${CHAT_PROVIDER:openai-compatible}
+    openai-compatible:
+      base-url: ${CHAT_OPENAI_BASE_URL:http://localhost:1234/v1}
+      model: ${CHAT_OPENAI_MODEL:qwen/qwen3.5-9b}
+      api-key: ${CHAT_OPENAI_API_KEY:}
+    anthropic:
+      model: ${CHAT_ANTHROPIC_MODEL:claude-sonnet-4-6}
+      api-key: ${ANTHROPIC_API_KEY:}
+  embedding:
+    provider: ${EMBEDDING_PROVIDER:none}
+    openai-compatible:
+      base-url: ${EMBEDDING_BASE_URL:http://localhost:1234/v1}
+      model: ${EMBEDDING_MODEL:text-embedding-nomic-embed-text-v1.5}
+      api-key: ${EMBEDDING_API_KEY:}
+      dimensions: ${EMBEDDING_DIMENSIONS:}

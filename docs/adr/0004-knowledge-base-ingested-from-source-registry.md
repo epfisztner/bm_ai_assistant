@@ -1,0 +1,3 @@
+# Knowledge Base is ingested from a Source Registry, not committed content
+
+The repository contains only the Source Registry (each Source's location, Product Category, bank and Bank Product); the application fetches the Sources itself, stores every distinct content as an immutable Source Version, and seeds the Knowledge Base on first startup. Committing page content would duplicate third-party material that changes over time and would hide the real problem the product has to solve: keeping the Knowledge Base in sync with the truth and knowing exactly which Source Version every Answer relied on. Offline runs are supported by letting the application write and replay its own fetched snapshots from a git-ignored directory; tests use synthetic fixtures.

@@ -1,0 +1,104 @@
+spring:
+  application:
+    name: expert-knowledge-assistant
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/knowledge}
+    username: ${DB_USER:knowledge}
+    password: ${DB_PASSWORD:knowledge}
+  flyway:
+    locations: classpath:db/migration
+  mvc:
+    problemdetails:
+      enabled: true
+  docker:
+    compose:
+      # `./mvnw spring-boot:run` starts only Postgres from compose.yaml (the app service is the packaged image)
+      start:
+        arguments: postgres
+
+knowledge:
+  source-registry:
+    # Versioned list of Sources the Knowledge Base is built from (ADR-0004).
+    location: ${SOURCE_REGISTRY:classpath:source-registry.yaml}
+  ingestion:
+    # Run ingestion on startup (before readiness) when the Knowledge Base is empty.
+    seed-on-startup: ${SEED_ON_STARTUP:true}
+    user-agent: "expert-knowledge-assistant/0.1 (+internal knowledge base ingestion)"
+    fetch-timeout: 20s
+    # Scheduled re-ingestion of all Sources (Spring cron, e.g. "0 0 5 * * *"); "-" disables it.
+    schedule:
+      cron: ${INGESTION_CRON:-}
+    # Offline work (ADR-0004): off | record (save each fetched page) | replay (read pages from the directory).
+    snapshots:
+      mode: ${SNAPSHOT_MODE:off}
+      directory: ${SNAPSHOT_DIR:snapshots}
+  extraction:
+    # Sections longer than this are split at paragraph boundaries into several Passages.
+    max-passage-chars: 1500
+  retrieval:
+    keyword-top-k: 20
+    # Passages presented to the chat model
+    top-n: 6
+    # A keyword match counts as evidence only above this cover-density rank (ts_rank_cd)
+    keyword-floor: 0.0
+    # semantic half (only with an embedding provider); fused with the keyword half by reciprocal-rank fusion
+    vector-top-k: 20
+    # A semantic match counts as evidence only above this cosine similarity
+    vector-floor: 0.3
+    rrf-k: 60
+  embedding:
+    # none (keyword-only retrieval) | openai-compatible; independent of the chat provider
+    provider: ${EMBEDDING_PROVIDER:none}
+    openai-compatible:
+      # e.g. https://api.openai.com/v1, http://localhost:1234/v1 (LM Studio), http://localhost:11434/v1 (Ollama)
+      base-url: ${EMBEDDING_BASE_URL:https://api.openai.com/v1}
+      model: ${EMBEDDING_MODEL:text-embedding-3-small}
+      api-key: ${EMBEDDING_API_KEY:}
+      # optional; sent as "dimensions" and part of the stored embedding model id
+      dimensions: ${EMBEDDING_DIMENSIONS:}
+      timeout: 60s
+  conversation:
+    # earlier Turns given to the question rewriter
+    history-turns: 3
+    # Sources listed with a MODEL_DECLINED / VERIFICATION_FAILED Refusal
+    refusal-sources: 3
+  chat:
+    # offline (deterministic, no key) | openai-compatible | anthropic; independent of the embedding provider
+    provider: ${CHAT_PROVIDER:offline}
+    offline:
+      # how many of the top Passages the offline adapter extracts sentences from
+      max-passages: 3
+      max-sentences: 3
+    openai-compatible:
+      # e.g. https://api.openai.com/v1, http://localhost:1234/v1 (LM Studio), http://localhost:11434/v1 (Ollama)
+      base-url: ${CHAT_OPENAI_BASE_URL:http://localhost:1234/v1}
+      model: ${CHAT_OPENAI_MODEL:qwen/qwen3.5-9b}
+      # optional for local servers
+      api-key: ${CHAT_OPENAI_API_KEY:}
+      temperature: 0.0
+      max-tokens: 4096
+      timeout: 120s
+      max-retries: 2
+    anthropic:
+      base-url: ${CHAT_ANTHROPIC_BASE_URL:https://api.anthropic.com}
+      model: ${CHAT_ANTHROPIC_MODEL:claude-sonnet-4-6}
+      api-key: ${ANTHROPIC_API_KEY:}
+      max-tokens: 16000
+      timeout: 300s
+      max-retries: 2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

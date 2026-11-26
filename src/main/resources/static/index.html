@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>API tesztkonzol – Szakértői tudásasszisztens</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --text: #1d2228;
+    --muted: #5d6671;
+    --border: #d5dae0;
+    --accent: #2f5fb3;
+    --accent-text: #ffffff;
+    --ok-bg: #e3f4e8;
+    --ok-text: #17602f;
+    --bad-bg: #fbe5e3;
+    --bad-text: #9b2219;
+    --warn-bg: #fdf1d6;
+    --warn-text: #7a5300;
+    --code-bg: #eef1f4;
+    --chip-bg: #e8eef8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15181c;
+      --panel: #1e2227;
+      --text: #e3e7ec;
+      --muted: #9aa4af;
+      --border: #363c44;
+      --accent: #7fa8ee;
+      --accent-text: #0d1522;
+      --ok-bg: #173323;
+      --ok-text: #8fdca8;
+      --bad-bg: #3d1a17;
+      --bad-text: #f4a49b;
+      --warn-bg: #3a2e12;
+      --warn-text: #f1cf7e;
+      --code-bg: #262b31;
+      --chip-bg: #24314a;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header.top {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1rem; background: var(--panel); border-bottom: 1px solid var(--border);
+  }
+  header.top h1 { margin: 0; font-size: 1.15rem; }
+  header.top .subtitle { margin: 0; color: var(--muted); font-size: 0.85rem; }
+  main {
+    display: grid; gap: 1rem; padding: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 1000px) {
+    main { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
+  }
+  section.panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;
+    min-width: 0;
+  }
+  section.panel + section.panel { margin-top: 1rem; }
+  h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+  h3 { margin: 0.75rem 0 0.4rem; font-size: 0.95rem; }
+  label { font-size: 0.85rem; color: var(--muted); display: inline-flex; flex-direction: column; gap: 0.2rem; }
+  label.wide { display: flex; }
+  input, select, textarea, button { font: inherit; color: inherit; }
+  input, select, textarea {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.5rem;
+  }
+  textarea { width: 100%; resize: vertical; }
+  button {
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-text);
+    border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer;
+  }
+  button.secondary { background: transparent; color: var(--accent); }
+  button:disabled { opacity: 0.55; cursor: progress; }
+  button[aria-busy="true"]::after { content: " …"; }
+  .row { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: end; }
+  .row + .row, .row + .notice, .notice + .row { margin-top: 0.6rem; }
+  .muted { color: var(--muted); font-size: 0.85rem; }
+  .mono, code, pre { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.82rem; }
+  pre {
+    background: var(--code-bg); border-radius: 6px; padding: 0.5rem; margin: 0.3rem 0;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0; }
+  .chip {
+    background: var(--chip-bg); color: var(--text); border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.2rem 0.7rem; font-size: 0.85rem;
+  }
+  .chip small { color: var(--muted); }
+  .notice {
+    border-radius: 6px; padding: 0.5rem 0.7rem; margin-top: 0.6rem; font-size: 0.9rem;
+    background: var(--bad-bg); color: var(--bad-text); border: 1px solid currentColor;
+  }
+  .notice:empty { display: none; }
+  .notice.info { background: var(--warn-bg); color: var(--warn-text); }
+  .badge { display: inline-block; border-radius: 4px; padding: 0.05rem 0.45rem; font-size: 0.8rem; font-weight: 600; }
+  .badge.ok { background: var(--ok-bg); color: var(--ok-text); }
+  .badge.bad { background: var(--bad-bg); color: var(--bad-text); }
+  .badge.neutral { background: var(--code-bg); color: var(--muted); }
+  .conversation-info { margin-top: 0.6rem; }
+  .turn { border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; margin-top: 0.75rem; }
+  .turn .question { font-weight: 600; }
+  .turn .answer { white-space: pre-wrap; margin: 0.5rem 0; }
+  .turn .refusal { margin: 0.5rem 0; color: var(--bad-text); }
+  ol.citations, ul.plain { padding-left: 1.2rem; margin: 0.3rem 0; }
+  ol.citations li, ul.plain li { margin-bottom: 0.35rem; }
+  .marker { font-weight: 700; }
+  details { margin-top: 0.5rem; }
+  details > summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
+  details.http > summary { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .status-ok { color: var(--ok-text); }
+  .status-bad { color: var(--bad-text); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .feedback { margin-top: 0.6rem; border-top: 1px dashed var(--border); padding-top: 0.5rem; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>API tesztkonzol – Szakértői tudásasszisztens</h1>
+    <p class="subtitle">Az <code>/api/v1</code> végpontok kézi kipróbálására szolgál. Ez nem a Szakértőknek szánt felület.</p>
+  </div>
+  <div class="row">
+    <label><span>Szakértő azonosító (<code>X-Expert-Id</code>)</span>
+      <input id="expert-id" autocomplete="off" spellcheck="false" size="14">
+    </label>
+    <span class="muted">Üresen hagyva nem küld fejlécet (401).</span>
+  </div>
+</header>
+
+<main>
+  <div>
+    <section class="panel" aria-labelledby="conversation-heading">
+      <h2 id="conversation-heading">Beszélgetés</h2>
+      <div class="row">
+        <label>Alapértelmezett termékkategória
+          <select id="conversation-category"></select>
+        </label>
+        <button id="start-conversation" type="button">Új beszélgetés</button>
+      </div>
+      <div id="start-notice" class="notice" role="alert"></div>
+      <div id="start-http"></div>
+      <p id="conversation-info" class="conversation-info muted">Még nincs beszélgetés. Indíts egyet az „Új beszélgetés” gombbal.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="ask-heading">
+      <h2 id="ask-heading">Kérdés</h2>
+      <div class="muted">Mintakérdések a kézi füstteszt forgatókönyveiből (kattintásra kitöltik a kérdést, de nem küldik el):</div>
+      <div id="samples" class="chips"></div>
+      <label class="wide">Kérdés
+        <textarea id="question" rows="3"></textarea>
+      </label>
+      <div class="row">
+        <label>Termékkategória csak erre a kérdésre
+          <select id="turn-category"></select>
+        </label>
+        <button id="ask" type="button">Kérdés küldése</button>
+      </div>
+      <div id="ask-notice" class="notice" role="alert"></div>
+      <div id="ask-http"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="turns-heading">
+      <h2 id="turns-heading">Kérdések és válaszok</h2>
+      <p id="no-turns" class="muted">Ebben a beszélgetésben még nincs kérdés.</p>
+      <div id="turns"></div>
+    </section>
+  </div>
+
+  <div>
+    <section class="panel" aria-labelledby="sources-heading">
+      <h2 id="sources-heading">Tudásbázis – Források</h2>
+      <div class="row">
+        <button id="refresh-sources" type="button" class="secondary">Frissítés</button>
+        <button id="run-ingestion" type="button">Betöltés indítása</button>
+      </div>
+      <div id="sources-notice" class="notice" role="alert"></div>
+      <div id="ingestion-result"></div>
+      <div id="sources" class="table-wrap"></div>
+      <div id="sources-http"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+// ---------------------------------------------------------------------------
+// API enum codes -> Hungarian display labels. Unknown codes fall back to the raw code.
+// Raw HTTP blocks always show the untouched API values.
+// ---------------------------------------------------------------------------
+const LABELS = {
+  turnStatus: { ANSWERED: "Megválaszolva", REFUSED: "Elutasítva" },
+  refusalReason: {
+    NO_EVIDENCE: "Nincs alátámasztó Forrás a Tudásbázisban (a modell nem lett meghívva).",
+    MODEL_DECLINED: "A modell nem adott választ: a talált Források nem válaszolják meg a kérdést.",
+    VERIFICATION_FAILED: "A válasz nem ment át az ellenőrzésen (a Hivatkozások nem támasztják alá)."
+  },
+  rating: { HELPFUL: "Hasznos", INCORRECT: "Hibás", OUTDATED: "Elavult" },
+  sourceStatus: { ACTIVE: "Aktív", RETIRED: "Kivezetett" },
+  versionStatus: { CURRENT: "aktuális", SUPERSEDED: "felülírt" },
+  ingestionOutcome: { UNCHANGED: "Változatlan", NEW_VERSION: "Új verzió", FAILED: "Sikertelen", RETIRED: "Kivezetett" },
+  chatProvider: {
+    "offline": "offline (kivonatoló helyettesítő)",
+    "openai-compatible": "OpenAI-kompatibilis",
+    "anthropic": "Anthropic"
+  },
+  trigger: { MANUAL: "kézi", STARTUP: "indításkor", SCHEDULE: "ütemezett" }
+};
+
+function label(table, code) {
+  if (code === null || code === undefined) return "–";
+  const value = LABELS[table][code];
+  return value === undefined ? String(code) : value;
+}
+
+// Product Category labels come from the API (/product-categories).
+const categoryLabels = new Map();
+function categoryLabel(code) {
+  if (!code) return "nincs szűrő";
+  return categoryLabels.get(code) || code;
+}
+
+const SAMPLE_QUESTIONS = [
+  { text: "Hány évig ingyenes a CIB ECO bankszámla?", hint: "CIB ECO" },
+  { text: "Hány évig ingyenes a CIB ECO Plusz bankszámla?", hint: "CIB ECO Plusz" },
+  { text: "Mekkora havi jóváírás kell hozzá?", hint: "folytatás a CIB ECO Plusz után" },
+  { text: "Mekkora havi jövedelem szükséges az Erste ingyenes bankszámlához?", hint: "Erste" },
+  { text: "Maximum hány éves futamidejű lehet a Fogyasztóbarát Lakáshitel?", hint: "lakáshitel szűrővel" },
+  { text: "Hogyan kell kenyeret sütni?", hint: "elutasítás várható" },
+  { text: "Mennyi a bitcoin árfolyama ma?", hint: "valódi modellel elutasítás" }
+];
+
+// ---------------------------------------------------------------------------
+// Small DOM helpers: all text goes through textContent, never innerHTML.
+// ---------------------------------------------------------------------------
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === null || value === undefined || value === false) continue;
+    if (key === "class") node.className = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value === true ? "" : value);
+  }
+  for (const child of children.flat()) {
+    if (child === null || child === undefined || child === false) continue;
+    node.append(child instanceof Node ? child : String(child));
+  }
+  return node;
+}
+
+function $(id) { return document.getElementById(id); }
+
+function safeLink(url, text) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return el("a", { href: parsed.href, target: "_blank", rel: "noopener noreferrer" }, text || url);
+    }
+  } catch (ignored) { /* not a URL: show it as text */ }
+  return el("span", {}, url || "–");
+}
+
+function formatTime(iso) {
+  if (!iso) return "–";
+  const date = new Date(iso);
+  return isNaN(date) ? iso : date.toLocaleString("hu-HU");
+}
+
+// A Source Version as "#<id> (<n>. verzió)".
+function versionText(sourceVersionId, versionNumber) {
+  if (sourceVersionId === null || sourceVersionId === undefined) return "–";
+  return "#" + sourceVersionId + " (" + versionNumber + ". verzió)";
+}
+
+function pretty(value) {
+  if (value === undefined) return "(nincs törzs)";
+  if (typeof value === "string") return value === "" ? "(üres törzs)" : value;
+  return JSON.stringify(value, null, 2);
+}
+
+// ---------------------------------------------------------------------------
+// Expert id: default "anna", remembered in localStorage when storage is available.
+// ---------------------------------------------------------------------------
+const EXPERT_KEY = "testConsole.expertId";
+function readStoredExpert() {
+  try {
+    const stored = localStorage.getItem(EXPERT_KEY);
+    return stored === null ? "anna" : stored;
+  } catch (ignored) { return "anna"; }
+}
+function storeExpert(value) {
+  try { localStorage.setItem(EXPERT_KEY, value); } catch (ignored) { /* storage unavailable */ }
+}
+const expertInput = $("expert-id");
+expertInput.value = readStoredExpert();
+expertInput.addEventListener("input", () => storeExpert(expertInput.value));
+
+// ---------------------------------------------------------------------------
+// API calls. Every call returns { ok, status, data, exchange }; network failures have status 0.
+// ---------------------------------------------------------------------------
+async function api(method, path, body) {
+  const url = "/api/v1" + path;
+  const headers = { "Accept": "application/json" };
+  const expert = expertInput.value.trim();
+  if (expert) headers["X-Expert-Id"] = expert;
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const exchange = { method, path: url, requestHeaders: headers, requestBody: body, status: 0, responseBody: undefined };
+  try {
+    const response = await fetch(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+    exchange.status = response.status;
+    exchange.statusText = response.statusText;
+    const text = await response.text();
+    let data = text;
+    try { data = text ? JSON.parse(text) : undefined; } catch (ignored) { /* keep the raw text */ }
+    exchange.responseBody = data;
+    return { ok: response.ok, status: response.status, data, exchange };
+  } catch (error) {
+    exchange.networkError = String(error);
+    return { ok: false, status: 0, data: undefined, exchange };
+  }
+}
+
+function httpBlock(exchange) {
+  const statusText = exchange.status === 0 ? "hálózati hiba" : exchange.status + (exchange.statusText ? " " + exchange.statusText : "");
+  const statusClass = exchange.status >= 200 && exchange.status < 300 ? "status-ok" : "status-bad";
+  const headerLines = Object.entries(exchange.requestHeaders).map(([k, v]) => k + ": " + v).join("\n");
+  return el("details", { class: "http" },
+    el("summary", {}, "HTTP: " + exchange.method + " " + exchange.path + " → ", el("span", { class: statusClass }, statusText)),
+    el("div", { class: "muted" }, "Kérés fejlécei"),
+    el("pre", {}, headerLines),
+    el("div", { class: "muted" }, "Kérés törzse"),
+    el("pre", {}, pretty(exchange.requestBody)),
+    el("div", { class: "muted" }, "Válasz törzse (változatlan API-válasz)"),
+    el("pre", {}, exchange.networkError ? exchange.networkError : pretty(exchange.responseBody)));
+}
+
+function showHttp(container, result) {
+  container.replaceChildren(httpBlock(result.exchange));
+}
+
+function problemText(result) {
+  if (result.status === 0) {
+    return "A szolgáltatás nem érhető el (hálózati hiba). Fut a szolgáltatás a " + location.origin + " címen?";
+  }
+  const problem = result.data && typeof result.data === "object" ? result.data : {};
+  const parts = ["Hiba: HTTP " + result.status + (problem.title ? " – " + problem.title : "")];
+  if (problem.detail) parts.push(problem.detail);
+  if (Array.isArray(problem.errors)) {
+    for (const error of problem.errors) parts.push(error.field + ": " + error.message);
+  }
+  return parts.join("\n");
+}
+
+function setNotice(node, result) {
+  node.style.whiteSpace = "pre-line";
+  node.textContent = result && !result.ok ? problemText(result) : "";
+}
+
+// Disables the trigger and shows a loading state while the call is in flight.
+async function busy(button, work) {
+  const original = button.textContent;
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  button.textContent = button.dataset.busyLabel || "Folyamatban";
+  try {
+    return await work();
+  } finally {
+    button.disabled = false;
+    button.removeAttribute("aria-busy");
+    button.textContent = original;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Product Categories
+// ---------------------------------------------------------------------------
+function fillCategorySelect(select, noneLabel, categories) {
+  select.replaceChildren(el("option", { value: "" }, noneLabel),
+    ...categories.map(c => el("option", { value: c.code }, c.label)));
+}
+
+async function loadCategories() {
+  const result = await api("GET", "/product-categories");
+  const categories = result.ok && Array.isArray(result.data) ? result.data : [];
+  for (const c of categories) categoryLabels.set(c.code, c.label);
+  fillCategorySelect($("conversation-category"), "nincs szűrő (minden termékkategória)", categories);
+  fillCategorySelect($("turn-category"), "a beszélgetés alapértelmezése", categories);
+  if (!result.ok) {
+    setNotice($("start-notice"), result);
+    showHttp($("start-http"), result);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Conversation and Turns
+// ---------------------------------------------------------------------------
+let conversation = null;
+
+async function startConversation() {
+  const category = $("conversation-category").value;
+  const body = category ? { productCategory: category } : {};
+  const result = await api("POST", "/conversations", body);
+  setNotice($("start-notice"), result);
+  showHttp($("start-http"), result);
+  if (!result.ok) return;
+  conversation = result.data;
+  $("turns").replaceChildren();
+  $("no-turns").hidden = false;
+  $("ask-http").replaceChildren();
+  $("ask-notice").textContent = "";
+  renderConversationInfo();
+}
+
+function renderConversationInfo() {
+  $("conversation-info").replaceChildren(
+    "Aktuális beszélgetés: ", el("strong", {}, "#" + conversation.id),
+    " · Szakértő: ", el("code", {}, conversation.expertId),
+    " · Alapértelmezett termékkategória: ", categoryLabel(conversation.productCategory),
+    " · Indítva: ", formatTime(conversation.createdAt));
+}
+
+async function ask() {
+  const notice = $("ask-notice");
+  if (!conversation) {
+    notice.className = "notice info";
+    notice.textContent = "Előbb indíts egy beszélgetést az „Új beszélgetés” gombbal.";
+    return;
+  }
+  notice.className = "notice";
+  const body = { question: $("question").value };
+  const category = $("turn-category").value;
+  if (category) body.productCategory = category;
+  const result = await api("POST", "/conversations/" + conversation.id + "/turns", body);
+  setNotice(notice, result);
+  if (!result.ok) {
+    showHttp($("ask-http"), result);
+    return;
+  }
+  $("ask-http").replaceChildren();
+  $("question").value = "";
+  $("no-turns").hidden = true;
+  $("turns").append(renderTurn(result.data, result.exchange));
+}
+
+function renderCitation(c) {
+  const versionNote = c.versionStatus === "SUPERSEDED"
+    ? " (" + label("versionStatus", c.versionStatus) + ", aktuális Forrásverzió: " + c.currentVersionId + ")"
+    : "";
+  const retiredNote = c.sourceStatus === "RETIRED" ? " · Forrás: " + label("sourceStatus", c.sourceStatus) : "";
+  return el("li", {},
+    el("span", { class: "marker" }, "[" + c.marker + "] "),
+    el("strong", {}, c.sourceTitle), " – ", safeLink(c.url),
+    el("div", { class: "muted" },
+      "Bank: " + (c.bank || "–") + " · Banki termék: " + (c.bankProduct || "–") +
+      " · Termékkategória: " + categoryLabel(c.productCategory)),
+    el("div", { class: "muted" },
+      "Forrásverzió: " + versionText(c.sourceVersionId, c.versionNumber) + versionNote + retiredNote +
+      " · letöltve: " + formatTime(c.fetchedAt)),
+    c.passageText ? el("details", {},
+      el("summary", {}, "Hivatkozott szövegrész" + (c.passageHeadingPath && c.passageHeadingPath.length ? " (" + c.passageHeadingPath.join(" › ") + ")" : "")),
+      el("pre", {}, c.passageText)) : null);
+}
+
+function renderTurn(turn, exchange) {
+  const answered = turn.status === "ANSWERED";
+  const card = el("article", { class: "turn" },
+    el("div", { class: "row" },
+      el("span", { class: "badge " + (answered ? "ok" : "bad") }, label("turnStatus", turn.status)),
+      el("span", { class: "muted" }, turn.ordinal + ". kérdés (azonosító: #" + turn.id + ")" +
+        " · termékkategória: " + categoryLabel(turn.productCategory))),
+    el("p", { class: "question" }, "Kérdés: " + turn.question),
+    turn.standaloneQuestion && turn.standaloneQuestion !== turn.question
+      ? el("p", { class: "muted" }, "Önálló kérdés (átírva az előzmények alapján): " + turn.standaloneQuestion)
+      : null);
+
+  if (answered) {
+    card.append(el("div", { class: "answer" }, turn.answer));
+  } else {
+    card.append(el("p", { class: "refusal" }, "Elutasítás oka: " + label("refusalReason", turn.refusalReason)));
+  }
+
+  if (turn.citations && turn.citations.length) {
+    card.append(el("h3", {}, "Hivatkozások"), el("ol", { class: "citations" }, turn.citations.map(renderCitation)));
+  }
+  if (turn.relevantSources && turn.relevantSources.length) {
+    card.append(el("h3", {}, "Kapcsolódó Források"), el("ul", { class: "plain" }, turn.relevantSources.map(s =>
+      el("li", {}, el("strong", {}, s.sourceTitle), " – ", safeLink(s.url),
+        el("div", { class: "muted" }, "Banki termék: " + (s.bankProduct || "–") + " · Forrásverzió: " +
+          versionText(s.sourceVersionId, s.versionNumber))))));
+  }
+
+  card.append(el("p", { class: "muted" },
+    "Modell: " + label("chatProvider", turn.chatProvider) + " / " + (turn.chatModel || "–") +
+    " · Válaszidő: " + turn.latencyMs + " ms · " + formatTime(turn.createdAt)));
+
+  card.append(renderFeedback(turn), renderAudit(turn), httpBlock(exchange));
+  return card;
+}
+
+function renderFeedback(turn) {
+  const comment = el("textarea", { rows: 2, placeholder: "Megjegyzés (nem kötelező)" });
+  const notice = el("div", { class: "notice", role: "alert" });
+  const stored = el("div");
+  const http = el("div");
+  const buttons = Object.keys(LABELS.rating).map(code => {
+    const button = el("button", { type: "button", class: "secondary" }, label("rating", code));
+    button.addEventListener("click", () => busy(button, async () => {
+      // Every rating button stays disabled while one rating is in flight.
+      buttons.forEach(b => { b.disabled = true; });
+      const body = { rating: code };
+      if (comment.value.trim()) body.comment = comment.value.trim();
+      let result;
+      try {
+        result = await api("POST", "/turns/" + turn.id + "/feedback", body);
+      } finally {
+        buttons.forEach(b => { b.disabled = false; });
+      }
+      setNotice(notice, result);
+      showHttp(http, result);
+      if (result.ok) {
+        const f = result.data;
+        stored.replaceChildren(el("p", { class: "muted" },
+          "Rögzített visszajelzés #" + f.id + ": ", el("strong", {}, label("rating", f.rating)),
+          f.comment ? " – „" + f.comment + "”" : "", " · " + f.expertId + " · " + formatTime(f.createdAt),
+          " · hivatkozott Forrásverziók: " + ((f.citedSourceVersions || []).map(v =>
+            (v.bankProduct || v.sourceTitle) + " #" + v.sourceVersionId).join(", ") || "nincs")));
+      }
+    }));
+    return button;
+  });
+  return el("div", { class: "feedback" },
+    el("div", { class: "muted" }, "Visszajelzés a válaszra:"),
+    el("div", { class: "row" }, buttons),
+    el("div", { class: "row" }, comment),
+    notice, stored, http);
+}
+
+function renderAudit(turn) {
+  const body = el("div");
+  const details = el("details", {}, el("summary", {}, "Auditrekord megnyitása"), body);
+  let loaded = false;
+  details.addEventListener("toggle", async () => {
+    if (!details.open || loaded) return;
+    loaded = true;
+    body.replaceChildren(el("p", { class: "muted" }, "Betöltés…"));
+    const result = await api("GET", "/turns/" + turn.id + "/audit");
+    if (!result.ok) {
+      loaded = false;
+      const notice = el("div", { class: "notice", role: "alert" });
+      setNotice(notice, result);
+      body.replaceChildren(notice, httpBlock(result.exchange));
+      return;
+    }
+    body.replaceChildren(renderAuditRecord(result.data), httpBlock(result.exchange));
+  });
+  return details;
+}
+
+function definition(term, value) {
+  return el("div", {}, el("span", { class: "muted" }, term + ": "), value === null || value === undefined ? "–" : value);
+}
+
+function renderAuditRecord(a) {
+  const parts = [
+    definition("Kérdés", a.question),
+    definition("Önálló kérdés", a.standaloneQuestion),
+    definition("Termékkategória", categoryLabel(a.productCategory)),
+    definition("Állapot", label("turnStatus", a.status) + (a.refusalReason ? " – " + label("refusalReason", a.refusalReason) : "")),
+    definition("Modell", label("chatProvider", a.chatProvider) + " / " + (a.chatModel || "–")),
+    definition("Beágyazási modell", a.embeddingModel),
+    definition("Prompt verzió", a.promptVersion),
+    definition("Válaszidő", a.latencyMs + " ms")
+  ];
+
+  if (a.rewrite) {
+    parts.push(el("h3", {}, "Kérdés átírása"),
+      definition("Prompt verzió", a.rewrite.promptVersion),
+      definition("Modell", label("chatProvider", a.rewrite.chatProvider) + " / " + (a.rewrite.chatModel || "–")),
+      definition("Összefűzésre esett vissza", a.rewrite.fellBackToJoin ? "igen" : "nem"),
+      el("pre", {}, a.rewrite.rawOutput || "–"));
+  } else {
+    parts.push(definition("Kérdés átírása", "nem volt (első kérdés)"));
+  }
+
+  const passages = a.retrievedPassages || [];
+  parts.push(el("h3", {}, "Visszakeresett szövegrészek (" + passages.length + ")"));
+  if (passages.length) {
+    parts.push(el("div", { class: "table-wrap" }, el("table", {},
+      el("thead", {}, el("tr", {}, ["Rang", "Forrás", "Banki termék", "Forrásverzió", "Kulcsszó-rang", "Vektor-rang", "Pontszám", "Promptban", "Jelölő"]
+        .map(h => el("th", {}, h)))),
+      el("tbody", {}, passages.map(p => el("tr", {},
+        el("td", {}, p.rank),
+        el("td", {}, p.sourceTitle, p.passageHeadingPath && p.passageHeadingPath.length
+          ? el("div", { class: "muted" }, p.passageHeadingPath.join(" › ")) : null),
+        el("td", {}, p.bankProduct || "–"),
+        el("td", {}, versionText(p.sourceVersionId, p.versionNumber)),
+        el("td", {}, p.lexicalRank ?? "–"),
+        el("td", {}, p.vectorRank ?? "–"),
+        el("td", { class: "mono" }, typeof p.score === "number" ? p.score.toFixed(4) : "–"),
+        el("td", {}, p.inPrompt ? "igen" : "nem"),
+        el("td", {}, p.marker === null || p.marker === undefined ? "–" : "[" + p.marker + "]")))))));
+  }
+
+  parts.push(el("h3", {}, "A modell nyers kimenete"), el("pre", {}, a.rawModelOutput || "–"));
+
+  parts.push(el("h3", {}, "Ellenőrzés eredménye"));
+  if (a.verdict) {
+    parts.push(el("div", {},
+      el("span", { class: "badge " + (a.verdict.passed ? "ok" : "bad") }, a.verdict.passed ? "Sikeres" : "Sikertelen"),
+      a.verdict.failedChecks && a.verdict.failedChecks.length
+        ? el("ul", { class: "plain" }, a.verdict.failedChecks.map(c => el("li", { class: "mono" }, c))) : null));
+  } else {
+    parts.push(el("div", { class: "muted" }, "Nem volt ellenőrzés (a modell nem adott ellenőrizhető választ)."));
+  }
+  return el("div", {}, parts);
+}
+
+// ---------------------------------------------------------------------------
+// Sources and ingestion
+// ---------------------------------------------------------------------------
+async function loadSources() {
+  const result = await api("GET", "/sources");
+  setNotice($("sources-notice"), result);
+  showHttp($("sources-http"), result);
+  if (!result.ok || !Array.isArray(result.data)) {
+    $("sources").replaceChildren();
+    return;
+  }
+  const sources = result.data;
+  $("sources").replaceChildren(
+    el("p", { class: "muted" }, sources.length + " Forrás"),
+    el("table", {},
+      el("thead", {}, el("tr", {}, ["Forrás", "Bank / Banki termék", "Termékkategória", "Állapot", "Aktuális verzió", "Utolsó letöltés"]
+        .map(h => el("th", {}, h)))),
+      el("tbody", {}, sources.map(s => el("tr", {},
+        el("td", {}, safeLink(s.url, s.title), el("div", { class: "muted mono" }, s.key)),
+        el("td", {}, (s.bank || "–"), el("div", { class: "muted" }, s.bankProduct || "–")),
+        el("td", {}, categoryLabel(s.productCategory)),
+        el("td", {}, el("span", { class: "badge " + (s.status === "ACTIVE" ? "ok" : "neutral") }, label("sourceStatus", s.status))),
+        el("td", {}, s.currentVersion
+          ? [s.currentVersion.versionNumber + ". verzió", el("div", { class: "muted" }, "#" + s.currentVersion.id + " · " + formatTime(s.currentVersion.fetchedAt))]
+          : "nincs"),
+        el("td", {}, label("ingestionOutcome", s.lastFetchOutcome),
+          el("div", { class: "muted" }, formatTime(s.lastFetchAttemptAt)),
+          s.lastFetchError ? el("div", { class: "status-bad" }, s.lastFetchError) : null))))));
+}
+
+async function runIngestion() {
+  const result = await api("POST", "/ingestion/runs");
+  setNotice($("sources-notice"), result);
+  if (!result.ok) {
+    // Keep the previous run's outcomes; show the failed exchange where the Sources call's would be.
+    showHttp($("sources-http"), result);
+    return;
+  }
+  const container = $("ingestion-result");
+  const run = result.data;
+  const outcomes = run.outcomes || [];
+  container.replaceChildren(
+    el("h3", {}, "Betöltési futás #" + run.id + " (" + label("trigger", run.trigger) + ")"),
+    el("p", { class: "muted" }, formatTime(run.startedAt) + " – " + formatTime(run.finishedAt)),
+    el("div", { class: "table-wrap" }, el("table", {},
+      el("thead", {}, el("tr", {}, ["Forrás kulcs", "Eredmény", "Forrásverzió", "Hiba"].map(h => el("th", {}, h)))),
+      el("tbody", {}, outcomes.map(o => el("tr", {},
+        el("td", { class: "mono" }, o.sourceKey),
+        el("td", {}, label("ingestionOutcome", o.outcome)),
+        el("td", {}, versionText(o.sourceVersionId, o.versionNumber)),
+        el("td", {}, o.error || "–")))))),
+    httpBlock(result.exchange));
+  await loadSources();
+}
+
+// ---------------------------------------------------------------------------
+// Wiring
+// ---------------------------------------------------------------------------
+$("samples").replaceChildren(...SAMPLE_QUESTIONS.map(sample =>
+  el("button", { type: "button", class: "chip", title: "Kitölti a kérdés mezőt", onclick: () => {
+    $("question").value = sample.text;
+    $("question").focus();
+  } }, sample.text, " ", el("small", {}, "(" + sample.hint + ")"))));
+
+$("start-conversation").dataset.busyLabel = "Indítás";
+$("ask").dataset.busyLabel = "Válaszra vár";
+$("refresh-sources").dataset.busyLabel = "Frissítés";
+$("run-ingestion").dataset.busyLabel = "Betöltés fut";
+
+$("start-conversation").addEventListener("click", e => busy(e.currentTarget, startConversation));
+$("ask").addEventListener("click", e => busy(e.currentTarget, ask));
+$("question").addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !$("ask").disabled) $("ask").click();
+});
+$("refresh-sources").addEventListener("click", e => busy(e.currentTarget, loadSources));
+$("run-ingestion").addEventListener("click", e => busy(e.currentTarget, runIngestion));
+
+(async () => {
+  await loadCategories();
+  await loadSources();
+})();
+</script>
+</body>
+</html>

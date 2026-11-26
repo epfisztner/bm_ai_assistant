@@ -1,0 +1,12 @@
+# Source Registry for StartupSeedingIT (its own application context and database).
+sources:
+  - key: seed-szamla
+    url: ${fixture-site.base-url}/seeding/szamla/
+    productCategory: BANKSZAMLA
+    bank: Mag Bank
+    bankProduct: Mag Számla
+  - key: seed-kolcson
+    url: ${fixture-site.base-url}/seeding/kolcson/
+    productCategory: SZEMELYI_KOLCSON
+    bank: Mag Bank
+    bankProduct: Mag Kölcsön

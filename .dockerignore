@@ -1,0 +1,9 @@
+.git
+.claude
+.idea
+.vscode
+.scratch
+*.iml
+target
+snapshots
+docs
